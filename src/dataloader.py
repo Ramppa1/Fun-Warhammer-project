@@ -1,7 +1,7 @@
 import pandas as pd
 from pathlib import Path
 
-DATA_PATH = Path("data/meta_overview.csv")
+DATA_PATH = Path(__file__).parent.parent / "data" / "meta_overview.csv"
 
 def load_data():
     """
@@ -9,6 +9,7 @@ def load_data():
     """
     column_names = ["faction", "winrate", "overrep", "fourzerostart", "eventwins", "playerpopulation"]
     df = pd.read_csv(DATA_PATH, quoting=3, skiprows=1, names=column_names)
+    df = _standardize_column_names(df)
     _validate_data(df) #Placeholder for data validation function
     return df
 
@@ -16,14 +17,8 @@ def _standardize_column_names(df):
     """
     Standardizes the column names to lowercase and replaces spaces with underscores.
     """
-    df.columns = (
-        df.columns.str.strip()
-        .str.replace('"', '')
-        .str.replace(" ", "_")
-        .str.replace("-", "")
-        .str.lower()
-    )
-
+    df = df.map(lambda x: x.strip().strip('"') if isinstance(x, str) else x)
+    
     numeric_columns = {"winrate", "overrep", "fourzerostart", "eventwins", "playerpopulation"}
     for col in numeric_columns:
         if col in df.columns:
